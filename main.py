@@ -9,13 +9,11 @@ import re
 import json
 import xlwt
 from bs4 import BeautifulSoup
-global n
-n = 0
 
 
 def get_url_data(crawl_url):
     page_data = get_page(crawl_url)
-    # save_as_excel(page_data)
+    save_as_excel(page_data, '心理学书籍信息.xls')
 
 
 def get_page(crawl_url):
@@ -27,7 +25,6 @@ def get_page(crawl_url):
     soup = BeautifulSoup(text, 'lxml')
     while len(soup.select('div[class="info"]')) != 0:
         temp_data_list = get_data_bs(soup)
-        print(n)
         if len(temp_data_list) != 0:
             data_list = data_list + temp_data_list
         if len(soup.select('span[class="next"] a')) != 0:
@@ -61,10 +58,8 @@ def get_page(crawl_url):
 
 # 使用BeautifulSoup方法
 def get_data_bs(soup):
-    global n
     data_list = []
     for item in soup.select('div[class="info"]'):
-        n += 1
         info_list = item.select('div[class="pub"]')[0].get_text().split('/')
         for i in range(len(info_list)):
             info_list[i] = info_list[i].strip()
@@ -88,9 +83,9 @@ def save_as_json(page_data):
     f.close()
 
 
-def save_as_excel(page_data):
+def save_as_excel(page_data, title):
     book = xlwt.Workbook(encoding='utf8')
-    sheet = book.add_sheet('心理学类信息', cell_overwrite_ok=True)
+    sheet = book.add_sheet('sheet1', cell_overwrite_ok=True)
     sheet.write(0, 0, '名称')
     sheet.write(0, 1, '链接')
     sheet.write(0, 2, '评分')
@@ -106,7 +101,7 @@ def save_as_excel(page_data):
         sheet.write(i + 1, 4, page_data[i]['press'])
         sheet.write(i + 1, 5, page_data[i]['pub_date'])
         sheet.write(i + 1, 6, page_data[i]['price'])
-    book.save('心理学书籍信息.xls')
+    book.save(title)
 
 
 # Press the green button in the gutter to run the script.
