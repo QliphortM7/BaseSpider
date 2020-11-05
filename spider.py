@@ -9,7 +9,10 @@ import requests
 import re
 import json
 import xlwt
+import pymysql
+import pymysql.cursors
 from bs4 import BeautifulSoup
+
 global n
 
 s = requests.Session()
@@ -138,6 +141,23 @@ def save_as_excel(page_data, title):
     book.save(title)
 
 
+# 保存到MySQL数据库
+def save_mysql(page_data):
+    conn = pymysql.connnect(host='localhost',
+                            user='root',
+                            password='8281',
+                            db='spider_book_data',
+                            charset='utf8mb4')
+    try:
+        with conn.cursor() as cursor:
+            for item in page_data:
+                sql = "INSERT INTO spider_book_data.psychology_book_data(``,``,``,``,``,``,``,``,``,``,``,``,``,``,``) " \
+                      "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                cursor.execute()
+    except Exception:
+        conn.rollback()
+
+
 # 提取一个网页的基本内容
 def get_url_soup(target_url):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -156,7 +176,7 @@ def log_in():
                'Referer': 'https://accounts.douban.com/passport/login?source=book'}
     data = {'ck': '',
             'name': '15866710115',
-            'password': '10qp29wo38ei',
+            'password': 'douban7WaN4QaV',
             'remember': 'false',
             'ticket': ''}
     r = []
@@ -165,7 +185,3 @@ def log_in():
     except Exception as e:
         print(e)
     return s, r
-
-
-
-
