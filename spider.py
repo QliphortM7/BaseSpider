@@ -21,7 +21,8 @@ s = requests.Session()
 def get_url_data(crawl_url):
     s, r = log_in()
     page_data = get_page(crawl_url)
-    save_as_excel(page_data, '心理学书籍信息.xls')
+    save_as_json(page_data)
+    save_mysql(page_data)
 
 
 # 循环获取每一页的书本数据
@@ -143,19 +144,26 @@ def save_as_excel(page_data, title):
 
 # 保存到MySQL数据库
 def save_mysql(page_data):
-    conn = pymysql.connnect(host='localhost',
-                            user='root',
-                            password='8281',
-                            db='spider_book_data',
-                            charset='utf8mb4')
+    conn = pymysql.connect(host='localhost',
+                           user='root',
+                           password='8281',
+                           db='spider_book_data',
+                           charset='utf8mb4')
     try:
         with conn.cursor() as cursor:
             for item in page_data:
-                sql = "INSERT INTO spider_book_data.psychology_book_data(``,``,``,``,``,``,``,``,``,``,``,``,``,``,``) " \
+                current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                sql = "INSERT INTO spider_book_data.psychology_book_data(`title`,`link`,`rate`,`evaluators`,`author`," \
+                      "`press`,`pub_date`,`tags`,`comments`,`review`,`create_time`) " \
                       "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                cursor.execute()
+                params = (item['title'], item['link'], item['rate'], item['evaluators'], item['author'], item['press'],
+                          item['pub_date'], item['tags'], item['comments'], item['review'], current_time)
+                cursor.execute(sql, params)
+                conn.commit()
     except Exception:
         conn.rollback()
+    cursor.close()
+    conn.close()
 
 
 # 提取一个网页的基本内容
