@@ -22,7 +22,6 @@ def get_url_data(crawl_url):
     s, r = log_in()
     page_data = get_page(crawl_url)
     save_as_json(page_data)
-    save_mysql(page_data)
 
 
 # 循环获取每一页的书本数据
@@ -161,6 +160,7 @@ def save_mysql(page_data):
                 cursor.execute(sql, params)
                 conn.commit()
     except Exception:
+        print("发生异常：" + str(Exception))
         conn.rollback()
     cursor.close()
     conn.close()
