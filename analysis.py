@@ -21,7 +21,7 @@ def create_wordcloud():
         for i in range(len(load_data)-1):
             tags = tags + "," + load_data[i+1]['tags']
     wc.generate(tags)
-    plt.imshow(wc)
-    plt.axis("off")
-    plt.show()
-    # wc.to_file('wc.png')  # 保存为图片
+    # plt.imshow(wc)
+    # plt.axis("off")
+    # plt.show()
+    wc.to_file('wc.png')  # 保存为图片

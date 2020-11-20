@@ -24,6 +24,8 @@ def get_url_data(crawl_url):
     save_as_json(page_data)
 
 
+# 使用Requests + BeautifulSoup方式爬取
+
 # 循环获取每一页的书本数据
 def get_page(crawl_url):
     global n
@@ -105,6 +107,35 @@ def get_detail(book_url):
     return detail_dict
 
 
+# 提取一个网页的基本内容
+def get_url_soup(target_url):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                             'Chrome/86.0.4240.111 Safari/537.36'}
+    res = s.get(target_url, headers=headers)
+    text = res.text
+    soup = BeautifulSoup(text, 'lxml')
+    return soup
+
+
+# 模拟登录
+def log_in():
+    url = 'https://accounts.douban.com/j/mobile/login/basic'
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                             'Chrome/86.0.4240.111 Safari/537.36',
+               'Referer': 'https://accounts.douban.com/passport/login?source=book'}
+    data = {'ck': '',
+            'name': '15866710115',
+            'password': 'douban7WaN4QaV',
+            'remember': 'false',
+            'ticket': ''}
+    r = []
+    try:
+        r = s.post(url, headers=headers, data=data)
+    except Exception as e:
+        print(e)
+    return s, r
+
+
 # json格式保存
 def save_as_json(page_data):
     json_page_data = json.dumps(page_data, ensure_ascii=False)
@@ -164,32 +195,3 @@ def save_mysql(page_data):
         conn.rollback()
     cursor.close()
     conn.close()
-
-
-# 提取一个网页的基本内容
-def get_url_soup(target_url):
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                             'Chrome/86.0.4240.111 Safari/537.36'}
-    res = s.get(target_url, headers=headers)
-    text = res.text
-    soup = BeautifulSoup(text, 'lxml')
-    return soup
-
-
-# 模拟登录
-def log_in():
-    url = 'https://accounts.douban.com/j/mobile/login/basic'
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                             'Chrome/86.0.4240.111 Safari/537.36',
-               'Referer': 'https://accounts.douban.com/passport/login?source=book'}
-    data = {'ck': '',
-            'name': '15866710115',
-            'password': 'douban7WaN4QaV',
-            'remember': 'false',
-            'ticket': ''}
-    r = []
-    try:
-        r = s.post(url, headers=headers, data=data)
-    except Exception as e:
-        print(e)
-    return s, r
