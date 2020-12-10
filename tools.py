@@ -1,6 +1,8 @@
 import json
 import pymysql
 import time
+import hashlib
+import requests
 
 
 # 将Json数据导入MYSQL中
@@ -30,6 +32,7 @@ def json_to_sql():
         cursor.close()
         conn.close()
 
+
 # 更新时间
 def update_time():
     with open('page_data', 'r', encoding='utf8') as f:
@@ -52,3 +55,24 @@ def update_time():
             conn.rollback()
         cursor.close()
         conn.close()
+
+
+def baidu_translate(text):
+    base_url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
+    app_id = 20201207000640614
+    app_secret = 'EQzCjSbEmZnYUoy4bRbn'
+    salt = str(round(time.time() * 1000))
+    sign_raw = str(app_id) + text + salt + app_secret
+    sign = hashlib.md5(sign_raw.encode('utf8')).hexdigest()
+    params = {
+        'q': text,
+        'from': 'auto',
+        'to': 'en',
+        'appid': app_id,
+        'salt': salt,
+        'sign': sign
+    }
+    response = requests.get(base_url, params=params).text
+    json_data = json.loads(response)
+    trans_res = [item['dst'].lower() for item in json_data['trans_result']]
+    return ','.join(trans_res)
