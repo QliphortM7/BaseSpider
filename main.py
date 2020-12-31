@@ -1,12 +1,16 @@
 import time
 import tools
 import analysis
-import spider
+import selenium_spider
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     start = time.time()
-    s = spider.BaseSpider('哲学')
+    # spider = selenium_spider.SeleniumSpider('哲学')
+    # spider.execute_task()
+    # l1 = spider.get_page('https://book.douban.com/tag/%E5%93%B2%E5%AD%A6?start=580&type=T')
+    conn = tools.DBOperation()
+    conn.update_title()
 
     # current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     # single_data = {'title': 'theme', 'link': 'https://book.douban.com/tag/%E5%BF%83%E7%90%86%E5%AD%A6?start=0&type=T',
