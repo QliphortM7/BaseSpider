@@ -50,15 +50,17 @@ class SeleniumSpider(BaseSpider):
         driver.get_url(target_url)
         items = driver.find_elements('div .info')
         for item in items:
-            temp_list = [i.strip() for i in item.find_element_by_css_selector('.pub').text.split('/')]
-            if len(temp_list) < 4:
-                print('非完整信息')
+            info_txt = item.find_element_by_css_selector('.pub').text
+            info_dict = self.process_info(info_txt)
+            if not info_dict:
+                print("非完整信息：", info_txt)
                 continue
+            evaluates = re.findall('\\d+', item.find_element_by_css_selector('.pl').text)
             temp_dict = {'link': item.find_element_by_css_selector('a').get_attribute('href'),
                          'title': item.find_element_by_css_selector('a').text,
                          'rate': self.get_select_value(item, '.rating_nums', '评价人数不足'),
-                         'evaluators': re.findall('\\d+', item.find_element_by_css_selector('.pl').text)[0],
-                         'press': temp_list[-3], 'pub_date': temp_list[-2], 'author': '/'.join(temp_list[:-3])}
+                         'evaluators': evaluates[0] if evaluates else 10}
+            temp_dict |= info_dict
             info_list.append(temp_dict)
         for temp_dict in info_list:
             detail_url = temp_dict['link']
@@ -73,7 +75,6 @@ class SeleniumSpider(BaseSpider):
         detail_dict['tags'] = re.sub('\\s+', ',', tags_text.strip())
         comments_ele = self.get_select_value(driver.browser, '.mod-hd .pl a', '0')
         reviews_ele = self.get_select_value(driver.browser, '#reviews-wrapper .pl a', '0')
-        print(reviews_ele)
         detail_dict['comments'] = re.findall('\\d+', comments_ele)[0]
         detail_dict['review'] = re.findall('\\d+', reviews_ele)[0]
         return detail_dict
@@ -121,6 +122,22 @@ class SeleniumSpider(BaseSpider):
             ex_list.append(d)
         with open('book_philosophy', 'w', encoding='utf8') as f:
             json.dump(ex_list, f, ensure_ascii=False)
+
+    @staticmethod
+    def process_info(txt):
+        dic = {}
+        pt = re.compile('\\d{4}')
+        wd_list = txt.split(' / ')
+        s = pt.search(txt)
+        if len(wd_list) < 4:
+            return dic
+        elif not s:
+            dic = {"name": "/".join(wd_list[:-2]), " press": wd_list[-2], "pub_date": ""}
+        elif pt.search(wd_list[-1]):
+            dic = {"name": "/".join(wd_list[:-2]), " press": wd_list[-2], "pub_date": wd_list[-1]}
+        elif pt.search(wd_list[-2]):
+            dic = {"name": "/".join(wd_list[:-3]), " press": wd_list[-3], "pub_date": wd_list[-2]}
+        return dic
 
 
 class CrawlBrowser(object):

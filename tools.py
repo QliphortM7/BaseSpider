@@ -27,7 +27,7 @@ class DBPool(object):
         def wrapper_func(*args):
             conn = self.db_pool.connection()
             try:
-                func(*args, connection=conn)
+                return func(*args, connection=conn)
             except Exception as e:
                 logging.error("发生异常：" + str(e))
                 conn.rollback()
@@ -106,18 +106,19 @@ class DBOperation(object):
 
     # 获取记录，测试
     @_db_pool.db_transaction
-    def get_item(self, num, **kwargs):
+    def get_item(self, **kwargs):
         conn = kwargs['connection']
         with conn.cursor() as cursor:
-            cursor.execute("select * from spider_book_data.book_info where create_time>'2020-12-29' limit {}".format(num))
-            r = cursor.fetchall()
-            print(r)
+            cursor.execute("select link from spider_book_data.book_info where book_info.pub_date NOT REGEXP '[0-9]{4}'")
+            query = cursor.fetchall()
+            wrong_list = [item[0] for item in query]
+            return wrong_list
 
 
 def baidu_translate(text):
     base_url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
     app_id = 20201207000640614
-    app_secret = 'EQzCjSbEmZnYUoy4bRbn'
+    app_secret = 'oD6n8nZ2tFxxs91bW0cl'
     salt = str(round(time.time() * 1000))
     sign_raw = str(app_id) + text + salt + app_secret
     sign = hashlib.md5(sign_raw.encode('utf8')).hexdigest()
@@ -134,10 +135,10 @@ def baidu_translate(text):
     print(json_data)
     try:
         trans_res = [item['dst'].lower() for item in json_data['trans_result']]
-        return ','.join(trans_res)
+        return ', '.join(trans_res)
     except Exception as e:
-        print(e)
-    return "error"
+        logging.error(e)
+        return "error"
 
 
 def time_delay(func):

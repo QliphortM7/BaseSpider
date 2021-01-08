@@ -4,7 +4,7 @@ import xlwt
 import tools
 import pymysql
 import pymysql.cursors
-from tools import Connection
+from tools import DBOperation
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -24,7 +24,7 @@ class BaseSpider(object):
     @staticmethod
     def save_as_json(page_data):
         json_page_data = json.dumps(page_data, ensure_ascii=False)
-        f = open('book_{tag}'.format(tag='philosophy'), 'w', encoding='utf8')
+        f = open('book_{tag}'.format(tag='politics'), 'w', encoding='utf8')
         f.write(json_page_data)
         f.close()
 
@@ -57,5 +57,5 @@ class BaseSpider(object):
 
     # 保存到MySQL数据库
     def save_mysql(self, page_data):
-        connection = Connection()
+        connection = DBOperation()
         connection.save_to_sql(page_data, self.tag)
